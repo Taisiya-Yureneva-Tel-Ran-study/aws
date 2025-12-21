@@ -1,44 +1,41 @@
 import json
+import operator
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 OPERATORS = {
-    "+": lambda x, y: x + y,
-    "-": lambda x, y: x - y,
-    "*": lambda x, y: x * y,
-    "/": lambda x, y: x / y
+    "+": operator.add,
+    "-": operator.sub,
+    "*": operator.mul,
+    "/": operator.truediv
 }
 
-def calculator(event, context):
+def calculator(event, __):
+    logger.debug(f"Received Event: {event}")
     result = None
     error = None
     data = None
     
     message = event.get("Records")[0].get("Sns").get("Message")
 
-    try:
-        data = json.loads(message)
-    except (json.JSONDecodeError, TypeError):
-        error = "Error: Invalid JSON format"
+    data = json.loads(message)
 
-    # Validate fields
-    error = error or ("op1" not in data and "Error: Missing operand 'op1'")
-    error = error or ("op2" not in data and "Error: Missing operand 'op2'")
-    error = error or ("operator" not in data and "Error: Missing 'operator'")
-
-    # Validate operands are numbers
-    error = error or (not isinstance(data.get("op1"), (int, float)) and
-                      f"Error: 'op1' is not a number")
-    error = error or (not isinstance(data.get("op2"), (int, float)) and
-                      f"Error: 'op2' is not a number")
-
-    error = error or (data.get("operator") not in OPERATORS and
-                      f"Error: Invalid operator '{data.get('operator')}'")
+    error = error or (data.get("operation") not in OPERATORS and
+                      f"Error: Invalid operation '{data.get('operation')}'")
 
     if not error:
+        logger.info(f"Performing operation {data['operation']} "
+                    f"on operands {data['op1']} and {data['op2']}")
         try:
-            result = OPERATORS[data["operator"]](data["op1"], data["op2"])
+            result = OPERATORS[data["operation"]](data["op1"], data["op2"])
         except ZeroDivisionError:
             error = "Error: Division by zero"
 
-    print(error if error else result)
+    if error:
+        logger.error(error)
+    else:
+        logger.info(f"Result: {result}")
 
     return result
