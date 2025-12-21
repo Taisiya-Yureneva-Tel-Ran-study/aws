@@ -59,5 +59,5 @@ def lambda_handler(event, __):
 
     return {
         'statusCode': status,
-        'body': res if res is not None else json.dumps({"error": error})
+        'body': res if res is not None else json.dumps({"detail": error})
     }

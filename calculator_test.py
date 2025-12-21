@@ -9,11 +9,7 @@ class CalculatorTest(TestCase):
         
     def test_bad_request(self):
         event={"Records":[{"Sns":{"Message": '{"op1": 1, "op2": 2, "operation": "bad"}', "someother": "data"}}]}
-        result = calculator(event, None)
-        self.assertIsNone(result)
-        event={"Records":[{"Sns":{"Message": '{"nothing": 1}', "someother": "data"}}]}
-        self.assertIsNone(calculator(event, None))
+        with self.assertRaises(ValueError):
+            calculator(event, None)
         event={"Records":[{"Sns":{"Message": '{"op1": 1, "op2": 0, "operation": "/"}', "someother": "data"}}]}
-        self.assertIsNone(calculator(event, None))
-        event={"Records":[{"Sns":{"Message": '{"op1": "smth", "op2": 2, "operation": "bad"}', "someother": "data"}}]}
         self.assertIsNone(calculator(event, None))

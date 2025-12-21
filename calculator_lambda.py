@@ -22,16 +22,13 @@ def calculator(event, __):
 
     data = json.loads(message)
 
-    error = error or (data.get("operation") not in OPERATORS and
-                      f"Error: Invalid operation '{data.get('operation')}'")
+    if data["operation"] not in OPERATORS:
+        raise ValueError(f"Invalid operation '{data.get('operation')}'")
 
-    if not error:
-        logger.info(f"Performing operation {data['operation']} "
-                    f"on operands {data['op1']} and {data['op2']}")
-        try:
-            result = OPERATORS[data["operation"]](data["op1"], data["op2"])
-        except ZeroDivisionError:
-            error = "Error: Division by zero"
+    try:
+        result = OPERATORS[data["operation"]](data["op1"], data["op2"])
+    except ZeroDivisionError:
+        error = "Error: Division by zero"
 
     if error:
         logger.error(error)
